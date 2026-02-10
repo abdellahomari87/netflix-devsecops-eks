@@ -1,0 +1,13 @@
+configuration-as-code
+workflow-aggregator
+git
+github
+sonar
+sonarqube-scanner
+nodejs
+email-ext
+mailer
+prometheus
+docker-workflow
+credentials-binding
+owasp-dependency-check

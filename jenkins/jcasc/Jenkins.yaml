@@ -1,0 +1,49 @@
+jenkins:
+  systemMessage: "Netflix DevSecOps Portfolio - Jenkins configured by JCasC"
+  numExecutors: 2
+  mode: NORMAL
+  crumbIssuer:
+    standard: {}
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "${JENKINS_ADMIN_PASSWORD}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+unclassified:
+  location:
+    url: "http://${JENKINS_PUBLIC_IP}:8080/"
+
+  sonarGlobalConfiguration:
+    installations:
+      - name: "sonar-server"
+        serverUrl: "http://${JENKINS_PUBLIC_IP}:9000"
+        credentialsId: "sonar-token"
+
+tool:
+  nodejs:
+    installations:
+      - name: "node16"
+        properties:
+          - installSource:
+              installers:
+                - nodeJSInstaller:
+                    id: "16.20.2"
+  jdk:
+    installations:
+      - name: "jdk17"
+        home: "/usr/lib/jvm/temurin-17-jdk-amd64"
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - string:
+              scope: GLOBAL
+              id: "sonar-token"
+              secret: "${SONAR_TOKEN}"
+              description: "SonarQube token from env"

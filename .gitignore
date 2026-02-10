@@ -1,0 +1,15 @@
+# Terraform
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+**/terraform.tfvars
+**/.terraform.lock.hcl
+
+# Ansible
+*.retry
+
+# Secrets / kubeconfig
+*.pem
+kubeconfig*
+secret*
+.env
