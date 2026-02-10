@@ -35,11 +35,18 @@ echo "deb [signed-by=/etc/apt/keyrings/adoptium.asc] https://packages.adoptium.n
 sudo apt-get update -y
 sudo apt-get install -y temurin-17-jdk
 
-echo "[4/10] Install Jenkins..."
-sudo mkdir -p /usr/share/keyrings
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc >/dev/null
-echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" \
+echo "[4/10] Install Jenkins (repo + GPG key)..."
+
+sudo mkdir -p /etc/apt/keyrings
+
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key \
+  | sudo gpg --dearmor -o /etc/apt/keyrings/jenkins.gpg
+
+sudo chmod a+r /etc/apt/keyrings/jenkins.gpg
+
+echo "deb [signed-by=/etc/apt/keyrings/jenkins.gpg] https://pkg.jenkins.io/debian-stable binary/" \
   | sudo tee /etc/apt/sources.list.d/jenkins.list >/dev/null
+
 sudo apt-get update -y
 sudo apt-get install -y jenkins
 
