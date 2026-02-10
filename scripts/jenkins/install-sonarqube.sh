@@ -26,7 +26,7 @@ fi
 echo "[3/5] Setting vm.max_map_count for SonarQube..."
 sudo sysctl -w vm.max_map_count=262144 >/dev/null
 echo "vm.max_map_count=262144" | sudo tee /etc/sysctl.d/99-sonarqube.conf >/dev/null
-sudo sysctl --system >/dev/null
+sudo sysctl -p /etc/sysctl.d/99-sonarqube.conf >/dev/null
 
 echo "[4/5] Starting SonarQube (LTS community)..."
 if sudo docker ps -a --format '{{.Names}}' | grep -q '^sonar$'; then
