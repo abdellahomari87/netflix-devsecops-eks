@@ -10,18 +10,16 @@ set -euo pipefail
 echo "[0/10] Fix Jenkins apt repo GPG (must be before apt update)..."
 
 sudo rm -f /etc/apt/sources.list.d/jenkins.list
-sudo rm -f /usr/share/keyrings/jenkins-keyring.asc
-sudo rm -f /usr/share/keyrings/jenkins-keyring.gpg
-sudo rm -f /etc/apt/keyrings/jenkins.gpg
+sudo rm -f /etc/apt/keyrings/jenkins.gpg /usr/share/keyrings/jenkins-keyring.asc
 
-sudo mkdir -p /etc/apt/keyrings
+sudo mkdir -p /usr/share/keyrings
 
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key \
-  | sudo gpg --dearmor -o /etc/apt/keyrings/jenkins.gpg
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key \
+  | sudo tee /usr/share/keyrings/jenkins-keyring.asc >/dev/null
 
 sudo chmod a+r /etc/apt/keyrings/jenkins.gpg
 
-echo "deb [signed-by=/etc/apt/keyrings/jenkins.gpg] https://pkg.jenkins.io/debian-stable binary/" \
+echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" \
   | sudo tee /etc/apt/sources.list.d/jenkins.list >/dev/null
   
 # ---------------------------------------------------------------------
