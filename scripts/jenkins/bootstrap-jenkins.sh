@@ -7,6 +7,25 @@ set -euo pipefail
 # export JENKINS_PUBLIC_IP="3.88.129.182"  (ou auto-detect)
 # ---------------------------------------------------------
 
+echo "[0/10] Fix Jenkins apt repo GPG (must be before apt update)..."
+
+sudo rm -f /etc/apt/sources.list.d/jenkins.list
+sudo rm -f /usr/share/keyrings/jenkins-keyring.asc
+sudo rm -f /usr/share/keyrings/jenkins-keyring.gpg
+sudo rm -f /etc/apt/keyrings/jenkins.gpg
+
+sudo mkdir -p /etc/apt/keyrings
+
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key \
+  | sudo gpg --dearmor -o /etc/apt/keyrings/jenkins.gpg
+
+sudo chmod a+r /etc/apt/keyrings/jenkins.gpg
+
+echo "deb [signed-by=/etc/apt/keyrings/jenkins.gpg] https://pkg.jenkins.io/debian-stable binary/" \
+  | sudo tee /etc/apt/sources.list.d/jenkins.list >/dev/null
+  
+---------------------------------------------------------------------
+
 if [[ -z "${JENKINS_ADMIN_PASSWORD:-}" ]]; then
   echo "ERROR: export JENKINS_ADMIN_PASSWORD first"
   exit 1
