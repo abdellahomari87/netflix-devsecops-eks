@@ -24,7 +24,7 @@ sudo chmod a+r /etc/apt/keyrings/jenkins.gpg
 echo "deb [signed-by=/etc/apt/keyrings/jenkins.gpg] https://pkg.jenkins.io/debian-stable binary/" \
   | sudo tee /etc/apt/sources.list.d/jenkins.list >/dev/null
   
----------------------------------------------------------------------
+# ---------------------------------------------------------------------
 
 if [[ -z "${JENKINS_ADMIN_PASSWORD:-}" ]]; then
   echo "ERROR: export JENKINS_ADMIN_PASSWORD first"
