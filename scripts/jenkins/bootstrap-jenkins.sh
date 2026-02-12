@@ -65,16 +65,6 @@ sudo apt-get install -y temurin-17-jdk
 
 echo "[4/10] Install Jenkins (repo + GPG key)..."
 
-sudo mkdir -p /etc/apt/keyrings
-
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key \
-  | sudo gpg --dearmor -o /etc/apt/keyrings/jenkins.gpg
-
-sudo chmod a+r /etc/apt/keyrings/jenkins.gpg
-
-echo "deb [signed-by=/etc/apt/keyrings/jenkins.gpg] https://pkg.jenkins.io/debian-stable binary/" \
-  | sudo tee /etc/apt/sources.list.d/jenkins.list >/dev/null
-
 sudo apt-get update -y
 sudo apt-get install -y jenkins
 
@@ -100,16 +90,18 @@ sudo cp -f ./jenkins/jcasc/jenkins.yaml /var/lib/jenkins/jcasc/jenkins.yaml
 sudo chown jenkins:jenkins /var/lib/jenkins/jcasc/jenkins.yaml
 
 echo "[8/10] Install Jenkins plugins (jenkins-plugin-cli)..."
-# jenkins-plugin-cli est fourni dans les versions récentes ; sinon on le télécharge
+# jenkins-plugin-cli n'est pas toujours présent; on installe le plugin manager tool (stable)
 if ! command -v jenkins-plugin-cli >/dev/null 2>&1; then
-  echo "Downloading jenkins-plugin-cli..."
-  curl -fsSL -o /tmp/jenkins-plugin-cli.jar \
-    https://github.com/jenkinsci/plugin-installation-manager-tool/releases/latest/download/jenkins-plugin-manager.jar
+  echo "Downloading plugin-installation-manager-tool from Maven Central..."
+  curl -fsSL -o /tmp/jenkins-plugin-manager.jar \
+    https://repo1.maven.org/maven2/io/jenkins/plugin-management/plugin-installation-manager-tool/2.13.2/plugin-installation-manager-tool-2.13.2.jar
+
   sudo install -d /usr/local/lib/jenkins
-  sudo mv /tmp/jenkins-plugin-cli.jar /usr/local/lib/jenkins/jenkins-plugin-cli.jar
+  sudo mv /tmp/jenkins-plugin-manager.jar /usr/local/lib/jenkins/jenkins-plugin-manager.jar
+
   cat <<'EOF' | sudo tee /usr/local/bin/jenkins-plugin-cli >/dev/null
 #!/usr/bin/env bash
-java -jar /usr/local/lib/jenkins/jenkins-plugin-cli.jar "$@"
+java -jar /usr/local/lib/jenkins/jenkins-plugin-manager.jar "$@"
 EOF
   sudo chmod +x /usr/local/bin/jenkins-plugin-cli
 fi
