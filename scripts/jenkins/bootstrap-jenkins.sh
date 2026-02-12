@@ -89,26 +89,40 @@ fi
 sudo cp -f ./jenkins/jcasc/jenkins.yaml /var/lib/jenkins/jcasc/jenkins.yaml
 sudo chown jenkins:jenkins /var/lib/jenkins/jcasc/jenkins.yaml
 
-echo "[8/10] Install Jenkins plugins (jenkins-plugin-cli)..."
+echo "[8/10] Install Jenkins plugins (offline .hpi download)..."
 
-# Le jar jenkins-plugin-cli est inclus dans le package Jenkins
-if ! command -v jenkins-plugin-cli >/dev/null 2>&1; then
-  echo "Installing jenkins-plugin-cli from /usr/share/java/jenkins.war ..."
-  sudo install -d /usr/local/lib/jenkins
+# On stoppe Jenkins pour éviter les verrous pendant l'install
+sudo systemctl stop jenkins || true
 
-  # extrait jenkins-plugin-cli.jar depuis le war
-  sudo unzip -p /usr/share/java/jenkins.war WEB-INF/lib/jenkins-plugin-cli.jar \
-  | sudo tee /usr/local/lib/jenkins/jenkins-plugin-cli.jar >/dev/null
-  sudo chmod 0644 /usr/local/lib/jenkins/jenkins-plugin-cli.jar
+# Dossier plugins
+sudo install -d -m 0755 -o jenkins -g jenkins /var/lib/jenkins/plugins
 
-  cat <<'EOF' | sudo tee /usr/local/bin/jenkins-plugin-cli >/dev/null
-#!/usr/bin/env bash
-java -jar /usr/local/lib/jenkins/jenkins-plugin-cli.jar "$@"
-EOF
-  sudo chmod +x /usr/local/bin/jenkins-plugin-cli
-fi
+# Télécharger chaque plugin listé (un par ligne) depuis updates.jenkins.io
+# Format attendu dans plugins.txt: plugin-id ou plugin-id:version
+while IFS= read -r p || [[ -n "$p" ]]; do
+  # ignore commentaires et lignes vides
+  [[ -z "$p" || "$p" =~ ^# ]] && continue
 
-sudo -u jenkins jenkins-plugin-cli --plugin-file ./jenkins/plugins/plugins.txt
+  name="${p%%:*}"
+  ver="${p#*:}"
+  if [[ "$ver" == "$p" ]]; then ver="latest"; fi
+
+  echo "Installing plugin: $name ($ver)"
+  if [[ "$ver" == "latest" ]]; then
+    # latest
+    curl -fsSL "https://updates.jenkins.io/latest/${name}.hpi" \
+      | sudo tee "/var/lib/jenkins/plugins/${name}.jpi" >/dev/null
+  else
+    # version pin
+    curl -fsSL "https://updates.jenkins.io/download/plugins/${name}/${ver}/${name}.hpi" \
+      | sudo tee "/var/lib/jenkins/plugins/${name}.jpi" >/dev/null
+  fi
+
+  sudo chown jenkins:jenkins "/var/lib/jenkins/plugins/${name}.jpi"
+done < ./jenkins/plugins/plugins.txt
+
+# Demander à Jenkins de recharger les plugins
+sudo -u jenkins touch /var/lib/jenkins/plugins/.restart-required || true
 
 echo "[9/10] Disable setup wizard + set JCasC env vars..."
 # Désactiver le wizard
