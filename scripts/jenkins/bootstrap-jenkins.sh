@@ -7,19 +7,26 @@ set -euo pipefail
 # export JENKINS_PUBLIC_IP="3.88.129.182"  (ou auto-detect)
 # ---------------------------------------------------------
 
-echo "[0/10] Fix Jenkins apt repo GPG (must be before apt update)..."
-
+# 1) Nettoyage complet Jenkins repo + clés
 sudo rm -f /etc/apt/sources.list.d/jenkins.list
-sudo rm -f /etc/apt/keyrings/jenkins-keyring.asc /usr/share/keyrings/jenkins-keyring.asc
+sudo rm -f /etc/apt/keyrings/jenkins.gpg /etc/apt/keyrings/jenkins-keyring.asc
+sudo rm -f /usr/share/keyrings/jenkins-keyring.asc
+sudo rm -f /etc/apt/trusted.gpg.d/jenkins*.gpg 2>/dev/null || true
 
+# 2) Recrée la clé au format gpg (recommandé)
 sudo install -d -m 0755 /etc/apt/keyrings
-
 curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key \
-  | sudo tee /etc/apt/keyrings/jenkins-keyring.asc >/dev/null
+  | sudo gpg --dearmor -o /etc/apt/keyrings/jenkins.gpg
+sudo chmod 0644 /etc/apt/keyrings/jenkins.gpg
 
-echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" \
+# 3) Recrée la source APT
+echo "deb [signed-by=/etc/apt/keyrings/jenkins.gpg] https://pkg.jenkins.io/debian-stable binary/" \
   | sudo tee /etc/apt/sources.list.d/jenkins.list >/dev/null
 
+# 4) Vérifie que la clé contient bien l'ID attendu
+sudo gpg --show-keys --with-colons /etc/apt/keyrings/jenkins.gpg | grep -E "pub|fpr" | head -n 20
+
+# 5) Update (doit être clean)
 sudo apt-get update
 
 # ---------------------------------------------------------------------
