@@ -14,7 +14,7 @@ sudo rm -f /etc/apt/keyrings/jenkins.gpg /usr/share/keyrings/jenkins-keyring.asc
 
 sudo mkdir -p /usr/share/keyrings
 
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key \
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key \
   | sudo tee /usr/share/keyrings/jenkins-keyring.asc >/dev/null
 
 sudo chmod a+r /usr/share/keyrings/jenkins-keyring.asc
