@@ -90,18 +90,19 @@ sudo cp -f ./jenkins/jcasc/jenkins.yaml /var/lib/jenkins/jcasc/jenkins.yaml
 sudo chown jenkins:jenkins /var/lib/jenkins/jcasc/jenkins.yaml
 
 echo "[8/10] Install Jenkins plugins (jenkins-plugin-cli)..."
-# jenkins-plugin-cli n'est pas toujours présent; on installe le plugin manager tool (stable)
-if ! command -v jenkins-plugin-cli >/dev/null 2>&1; then
-  echo "Downloading plugin-installation-manager-tool from Maven Central..."
-  curl -fsSL -o /tmp/jenkins-plugin-manager.jar \
-    https://repo1.maven.org/maven2/io/jenkins/plugin-management/plugin-installation-manager-tool/2.13.2/plugin-installation-manager-tool-2.13.2.jar
 
+# Le jar jenkins-plugin-cli est inclus dans le package Jenkins
+if ! command -v jenkins-plugin-cli >/dev/null 2>&1; then
+  echo "Installing jenkins-plugin-cli from /usr/share/java/jenkins.war ..."
   sudo install -d /usr/local/lib/jenkins
-  sudo mv /tmp/jenkins-plugin-manager.jar /usr/local/lib/jenkins/jenkins-plugin-manager.jar
+
+  # extrait jenkins-plugin-cli.jar depuis le war
+  sudo unzip -p /usr/share/java/jenkins.war WEB-INF/lib/jenkins-plugin-cli.jar \
+    > /usr/local/lib/jenkins/jenkins-plugin-cli.jar
 
   cat <<'EOF' | sudo tee /usr/local/bin/jenkins-plugin-cli >/dev/null
 #!/usr/bin/env bash
-java -jar /usr/local/lib/jenkins/jenkins-plugin-manager.jar "$@"
+java -jar /usr/local/lib/jenkins/jenkins-plugin-cli.jar "$@"
 EOF
   sudo chmod +x /usr/local/bin/jenkins-plugin-cli
 fi
