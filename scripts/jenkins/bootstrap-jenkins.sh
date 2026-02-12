@@ -98,7 +98,8 @@ if ! command -v jenkins-plugin-cli >/dev/null 2>&1; then
 
   # extrait jenkins-plugin-cli.jar depuis le war
   sudo unzip -p /usr/share/java/jenkins.war WEB-INF/lib/jenkins-plugin-cli.jar \
-    > /usr/local/lib/jenkins/jenkins-plugin-cli.jar
+  | sudo tee /usr/local/lib/jenkins/jenkins-plugin-cli.jar >/dev/null
+  sudo chmod 0644 /usr/local/lib/jenkins/jenkins-plugin-cli.jar
 
   cat <<'EOF' | sudo tee /usr/local/bin/jenkins-plugin-cli >/dev/null
 #!/usr/bin/env bash
