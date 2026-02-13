@@ -126,21 +126,22 @@ sudo -u jenkins touch /var/lib/jenkins/plugins/.restart-required || true
 
 echo "[9/10] Disable setup wizard + set JCasC env vars..."
 # Désactiver le wizard
-sudo bash -c 'echo "JAVA_ARGS=\"-Djenkins.install.runSetupWizard=false\"" > /etc/default/jenkins'
+sudo bash -c 'echo "JAVA_OPTS=\"-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false\"" > /etc/default/jenkins'
 
-# Env vars pour JCasC (systemd override)
+# Env vars pour JCasC + désactivation wizard (systemd override)
 sudo mkdir -p /etc/systemd/system/jenkins.service.d
+
 cat <<EOF | sudo tee /etc/systemd/system/jenkins.service.d/override.conf >/dev/null
 [Service]
 Environment="CASC_JENKINS_CONFIG=/var/lib/jenkins/jcasc/jenkins.yaml"
 Environment="JENKINS_ADMIN_PASSWORD=${JENKINS_ADMIN_PASSWORD}"
 Environment="SONAR_TOKEN=${SONAR_TOKEN}"
 Environment="JENKINS_PUBLIC_IP=${JENKINS_PUBLIC_IP}"
+Environment="JAVA_OPTS=-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"
 EOF
 
 echo "[10/10] Restart Jenkins..."
 sudo systemctl daemon-reload
-sudo systemctl enable --now jenkins
 sudo systemctl restart jenkins
 
 echo "Done."
