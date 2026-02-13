@@ -14,13 +14,13 @@ sudo rm -f /etc/apt/keyrings/jenkins.gpg /etc/apt/keyrings/jenkins.asc
 sudo install -d -m 0755 /etc/apt/keyrings
 
 # Option B (le plus simple): store ASCII key
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key \
-  | sudo tee /etc/apt/keyrings/jenkins.asc >/dev/null
+sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
 
-sudo chmod 0644 /etc/apt/keyrings/jenkins.asc
+gpg --show-keys --with-fingerprint /etc/apt/keyrings/jenkins-keyring.asc | tail -n +1
 
-echo "deb [signed-by=/etc/apt/keyrings/jenkins.asc] https://pkg.jenkins.io/debian-stable binary/" \
-  | sudo tee /etc/apt/sources.list.d/jenkins.list >/dev/null
+echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" | \
+  sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
 
 sudo apt-get update
 
