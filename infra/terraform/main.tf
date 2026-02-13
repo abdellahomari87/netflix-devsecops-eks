@@ -73,7 +73,7 @@ module "eks" {
   eks_managed_node_groups = {
     default = {
       name           = "${local.name}-ng"
-      instance_types = ["t3.large"]
+      instance_types = ["t3.medium"]
       min_size       = 2
       max_size       = 3
       desired_size   = 2
@@ -192,7 +192,7 @@ data "aws_ami" "ubuntu_2204" {
 
 resource "aws_instance" "jenkins" {
   ami                         = data.aws_ami.ubuntu_2204.id
-  instance_type               = "t3.large"
+  instance_type               = "t3.medium"
   subnet_id                   = module.vpc.public_subnets[0]
   vpc_security_group_ids      = [aws_security_group.jenkins.id]
   iam_instance_profile        = aws_iam_instance_profile.jenkins.name
