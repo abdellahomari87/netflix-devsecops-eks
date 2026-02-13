@@ -9,4 +9,4 @@ mailer
 prometheus
 docker-workflow
 credentials-binding
-owasp-dependency-check-plugin
+dependency-check-jenkins-plugin
