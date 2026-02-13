@@ -9,28 +9,19 @@ set -euo pipefail
 
 # Nettoyage Jenkins repo + clés (pour être sûr)
 sudo rm -f /etc/apt/sources.list.d/jenkins.list
-sudo rm -f /etc/apt/keyrings/jenkins.gpg
-sudo rm -f /etc/apt/keyrings/jenkins-keyring.asc
-sudo rm -f /usr/share/keyrings/jenkins-keyring.asc
-sudo rm -f /etc/apt/trusted.gpg.d/jenkins*.gpg 2>/dev/null || true
+sudo rm -f /etc/apt/keyrings/jenkins.gpg /etc/apt/keyrings/jenkins.asc
 
 sudo install -d -m 0755 /etc/apt/keyrings
 
-# Importer LA clé demandée par APT via keyserver (celle qui finit par 14ABFC68)
-sudo gpg --no-default-keyring --keyring /etc/apt/keyrings/jenkins.gpg \
-  --keyserver keyserver.ubuntu.com \
-  --recv-keys 7198F4B714ABFC68
+# Option B (le plus simple): store ASCII key
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key \
+  | sudo tee /etc/apt/keyrings/jenkins.asc >/dev/null
 
-sudo chmod 0644 /etc/apt/keyrings/jenkins.gpg
+sudo chmod 0644 /etc/apt/keyrings/jenkins.asc
 
-# Recréer la source APT Jenkins
-echo "deb [signed-by=/etc/apt/keyrings/jenkins.gpg] https://pkg.jenkins.io/debian-stable binary/" \
+echo "deb [signed-by=/etc/apt/keyrings/jenkins.asc] https://pkg.jenkins.io/debian-stable binary/" \
   | sudo tee /etc/apt/sources.list.d/jenkins.list >/dev/null
 
-# Vérifier que la clé importée est bien celle attendue
-sudo gpg --no-default-keyring --keyring /etc/apt/keyrings/jenkins.gpg --list-keys --fingerprint
-
-# Update (doit être clean)
 sudo apt-get update
 
 # ---------------------------------------------------------------------
