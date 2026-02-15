@@ -31,7 +31,7 @@ sudo sysctl -p /etc/sysctl.d/99-sonarqube.conf >/dev/null
 echo "[4/5] Starting SonarQube (LTS)..."
 
 # 1) Pull latest LTS image (active)
-sudo docker pull sonarqube:lts >/dev/null
+sudo docker pull sonarqube:community >/dev/null
 
 # 2) Stop + remove existing container if any (so we don't keep old image)
 if sudo docker ps -a --format '{{.Names}}' | grep -q '^sonar$'; then
@@ -44,7 +44,7 @@ fi
 sudo docker run -d --name sonar \
   -p 9000:9000 \
   --restart unless-stopped \
-  sonarqube:lts
+  sonarqube:community
 
 echo "[5/5] Done. SonarQube should be available on port 9000."
 echo "    Example: http://<EC2_PUBLIC_IP>:9000"
