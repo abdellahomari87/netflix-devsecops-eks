@@ -80,24 +80,41 @@ fi
 sudo cp -f ./jenkins/jcasc/jenkins.yaml /var/lib/jenkins/jcasc/jenkins.yaml
 sudo chown jenkins:jenkins /var/lib/jenkins/jcasc/jenkins.yaml
 
-echo "[8/10] Install Jenkins plugins (with dependencies)..."
+echo "[8/10] Install Jenkins plugins (with deps via plugin-manager)..."
 
+PIM_VERSION="2.14.0"
+PIM_JAR="/usr/local/lib/jenkins/jenkins-plugin-manager-${PIM_VERSION}.jar"
+PIM_URL="https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${PIM_VERSION}/jenkins-plugin-manager-${PIM_VERSION}.jar"
+
+sudo install -d /usr/local/lib/jenkins
+
+if [[ ! -f "${PIM_JAR}" ]]; then
+  echo "Downloading plugin manager ${PIM_VERSION}..."
+  sudo curl -fsSL -o "${PIM_JAR}" "${PIM_URL}"
+fi
+
+# IMPORTANT: Jenkins doit être arrêté avant de manipuler /var/lib/jenkins/plugins
 sudo systemctl stop jenkins || true
 
-sudo apt-get update -y
-sudo apt-get install -y default-jre curl
+# (Optionnel mais conseillé) Nettoyer anciens plugins cassés + cache
+sudo rm -rf /var/lib/jenkins/plugins/*.jpi \
+            /var/lib/jenkins/plugins/*.hpi \
+            /var/lib/jenkins/plugins/*.bak \
+            /var/lib/jenkins/plugins/*.pinned \
+            /var/lib/jenkins/plugins/*/ \
+            /var/lib/jenkins/plugins/.cache 2>/dev/null || true
 
-sudo mkdir -p /opt/jenkins
-sudo curl -fsSL -o /opt/jenkins/jenkins-plugin-manager.jar \
-  https://github.com/jenkinsci/plugin-installation-manager-tool/releases/latest/download/jenkins-plugin-manager.jar
-
-sudo java -jar /opt/jenkins/jenkins-plugin-manager.jar \
+# Installer plugins + dépendances dans le bon dossier
+sudo -u jenkins java -jar "${PIM_JAR}" \
   --war /usr/share/java/jenkins.war \
   --plugin-file ./jenkins/plugins/plugins.txt \
-  --plugin-download-directory /var/lib/jenkins/plugins
+  --plugin-download-directory /var/lib/jenkins/plugins \
+  --latest true
 
-sudo chown -R jenkins:jenkins /var/lib/jenkins/plugins
+# Demander à Jenkins de recharger plugins au prochain restart
 sudo -u jenkins touch /var/lib/jenkins/plugins/.restart-required || true
+
+sudo systemctl start jenkins
 
 echo "[9/10] Disable setup wizard + set JCasC env vars..."
 # Désactiver le wizard
