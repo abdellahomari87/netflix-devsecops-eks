@@ -28,16 +28,23 @@ sudo sysctl -w vm.max_map_count=262144 >/dev/null
 echo "vm.max_map_count=262144" | sudo tee /etc/sysctl.d/99-sonarqube.conf >/dev/null
 sudo sysctl -p /etc/sysctl.d/99-sonarqube.conf >/dev/null
 
-echo "[4/5] Starting SonarQube (LTS community)..."
+echo "[4/5] Starting SonarQube (LTS)..."
+
+# 1) Pull latest LTS image (active)
+sudo docker pull sonarqube:lts >/dev/null
+
+# 2) Stop + remove existing container if any (so we don't keep old image)
 if sudo docker ps -a --format '{{.Names}}' | grep -q '^sonar$'; then
-  echo "SonarQube container already exists. Restarting..."
-  sudo docker restart sonar >/dev/null
-else
-  sudo docker run -d --name sonar \
-    -p 9000:9000 \
-    --restart unless-stopped \
-    sonarqube:lts-community
+  echo "SonarQube container exists. Recreating with latest LTS..."
+  sudo docker stop sonar >/dev/null 2>&1 || true
+  sudo docker rm sonar   >/dev/null 2>&1 || true
 fi
+
+# 3) Run fresh LTS
+sudo docker run -d --name sonar \
+  -p 9000:9000 \
+  --restart unless-stopped \
+  sonarqube:lts
 
 echo "[5/5] Done. SonarQube should be available on port 9000."
 echo "    Example: http://<EC2_PUBLIC_IP>:9000"
