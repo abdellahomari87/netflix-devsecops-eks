@@ -80,39 +80,23 @@ fi
 sudo cp -f ./jenkins/jcasc/jenkins.yaml /var/lib/jenkins/jcasc/jenkins.yaml
 sudo chown jenkins:jenkins /var/lib/jenkins/jcasc/jenkins.yaml
 
-echo "[8/10] Install Jenkins plugins (offline .hpi download)..."
+echo "[8/10] Install Jenkins plugins (with dependencies)..."
 
-# On stoppe Jenkins pour éviter les verrous pendant l'install
 sudo systemctl stop jenkins || true
 
-# Dossier plugins
-sudo install -d -m 0755 -o jenkins -g jenkins /var/lib/jenkins/plugins
+sudo apt-get update -y
+sudo apt-get install -y default-jre curl
 
-# Télécharger chaque plugin listé (un par ligne) depuis updates.jenkins.io
-# Format attendu dans plugins.txt: plugin-id ou plugin-id:version
-while IFS= read -r p || [[ -n "$p" ]]; do
-  # ignore commentaires et lignes vides
-  [[ -z "$p" || "$p" =~ ^# ]] && continue
+sudo mkdir -p /opt/jenkins
+sudo curl -fsSL -o /opt/jenkins/jenkins-plugin-manager.jar \
+  https://github.com/jenkinsci/plugin-installation-manager-tool/releases/latest/download/jenkins-plugin-manager.jar
 
-  name="${p%%:*}"
-  ver="${p#*:}"
-  if [[ "$ver" == "$p" ]]; then ver="latest"; fi
+sudo java -jar /opt/jenkins/jenkins-plugin-manager.jar \
+  --war /usr/share/java/jenkins.war \
+  --plugin-file ./jenkins/plugins/plugins.txt \
+  --plugin-download-directory /var/lib/jenkins/plugins
 
-  echo "Installing plugin: $name ($ver)"
-  if [[ "$ver" == "latest" ]]; then
-    # latest
-    curl -fsSL "https://updates.jenkins.io/latest/${name}.hpi" \
-      | sudo tee "/var/lib/jenkins/plugins/${name}.jpi" >/dev/null
-  else
-    # version pin
-    curl -fsSL "https://updates.jenkins.io/download/plugins/${name}/${ver}/${name}.hpi" \
-      | sudo tee "/var/lib/jenkins/plugins/${name}.jpi" >/dev/null
-  fi
-
-  sudo chown jenkins:jenkins "/var/lib/jenkins/plugins/${name}.jpi"
-done < ./jenkins/plugins/plugins.txt
-
-# Demander à Jenkins de recharger les plugins
+sudo chown -R jenkins:jenkins /var/lib/jenkins/plugins
 sudo -u jenkins touch /var/lib/jenkins/plugins/.restart-required || true
 
 echo "[9/10] Disable setup wizard + set JCasC env vars..."
