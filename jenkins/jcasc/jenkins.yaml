@@ -58,8 +58,16 @@ credentials:
   system:
     domainCredentials:
       - credentials:
+
           - string:
               scope: GLOBAL
               id: "sonar-token"
               secret: "${SONAR_TOKEN}"
               description: "SonarQube token from env"
+
+          - usernamePassword:
+              scope: GLOBAL
+              id: "dockerhub-creds"
+              username: "${DOCKERHUB_USER}"
+              password: "${DOCKERHUB_TOKEN}"
+              description: "DockerHub credentials from env"

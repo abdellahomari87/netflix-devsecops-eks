@@ -3,10 +3,3 @@ workflow-aggregator
 git
 github
 sonar
-nodejs
-email-ext
-mailer
-prometheus
-docker-workflow
-credentials-binding
-dependency-check-jenkins-plugin
