@@ -19,12 +19,23 @@ unclassified:
     url: "http://${JENKINS_PUBLIC_IP}:8080/"
 
   sonarGlobalConfiguration:
+    buildWrapperEnabled: true
     installations:
-      - name: "sonar-server"
-        serverUrl: "http://${JENKINS_PUBLIC_IP}:9000"
+      - name: "sonar"
+        serverUrl: "http://127.0.0.1:9000"
         credentialsId: "sonar-token"
 
 tool:
+  git:
+    installations:
+      - name: "Default"
+        home: "/usr/bin/git"
+
+  jdk:
+    installations:
+      - name: "jdk17"
+        home: "/usr/lib/jvm/temurin-17-jdk-amd64"
+
   nodejs:
     installations:
       - name: "node16"
@@ -33,10 +44,15 @@ tool:
               installers:
                 - nodeJSInstaller:
                     id: "16.20.2"
-  jdk:
+
+  sonarRunnerInstallation:
     installations:
-      - name: "jdk17"
-        home: "/usr/lib/jvm/temurin-17-jdk-amd64"
+      - name: "sonar-scanner"
+        properties:
+          - installSource:
+              installers:
+                - sonarRunnerInstaller:
+                    id: "8.0.1.6346"
 
 credentials:
   system:
