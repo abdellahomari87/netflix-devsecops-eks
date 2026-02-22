@@ -33,17 +33,17 @@ tool:
 
   jdk:
     installations:
-      - name: "jdk17"
-        home: "/usr/lib/jvm/temurin-17-jdk-amd64"
+      - name: "jdk21"
+        home: "/usr/lib/jvm/temurin-21-jdk-amd64"
 
   nodejs:
     installations:
-      - name: "node16"
+      - name: "node-lts"
         properties:
           - installSource:
               installers:
                 - nodeJSInstaller:
-                    id: "16.20.2"
+                    id: "22.22.0"
 
   sonarRunnerInstallation:
     installations:
