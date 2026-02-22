@@ -3,3 +3,4 @@ workflow-aggregator
 git
 github
 sonar
+nodejs
